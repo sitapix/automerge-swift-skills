@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Automerge Swift CRDT skills, commands, and hooks \u2014 Document API, Codable mapping, sync protocol, auditing, and guardrails",
-    "version": "1.1.1"
+    "version": "1.1.2"
   },
   "plugins": [
     {
@@ -14,7 +14,7 @@
       "description": "Skills, commands, and hooks for Automerge Swift CRDTs \u2014 Document API, Codable mapping, sync protocol, fork/merge, patches, auditing, and guardrails",
       "homepage": "https://github.com/sitapix/automerge-swift-skills",
       "repository": "https://github.com/sitapix/automerge-swift-skills",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "author": {
         "name": "sitapix"
       },
@@ -38,11 +38,8 @@
         "sync",
         "collaborative-editing"
       ],
-      "category": "productivity",
-      "commands": "./commands/",
-      "skills": "./skills/",
-      "hooks": "./hooks/hooks.json"
+      "category": "productivity"
     }
   ],
-  "version": "1.1.1"
+  "version": "1.1.2"
 }

@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_COMPONENT_FIELDS = ("commands", "agents", "skills", "hooks")
 
 
 class ValidationError(RuntimeError):
@@ -98,15 +99,16 @@ def validate_marketplace_manifest(root: Path) -> None:
     if not isinstance(plugins, list):
         fail(".claude-plugin/marketplace.json must contain a top-level 'plugins' array")
 
-    invalid_agents = [
+    invalid_plugins = [
         plugin.get("name", f"plugins[{index}]")
         for index, plugin in enumerate(plugins)
-        if isinstance(plugin, dict) and "agents" in plugin
+        if isinstance(plugin, dict) and any(field in plugin for field in DEFAULT_COMPONENT_FIELDS)
     ]
-    if invalid_agents:
+    if invalid_plugins:
         fail(
-            ".claude-plugin/marketplace.json plugins must not declare 'agents': "
-            + ", ".join(invalid_agents)
+            ".claude-plugin/marketplace.json plugins must not declare default component paths; "
+            "use root-level auto-discovery instead: "
+            + ", ".join(invalid_plugins)
         )
 
 
@@ -120,8 +122,13 @@ def validate_plugin_manifest(root: Path) -> None:
     except json.JSONDecodeError as exc:
         fail(f".claude-plugin/plugin.json is not valid JSON: {exc}")
 
-    if "agents" in plugin:
-        fail(".claude-plugin/plugin.json must not declare 'agents' for the current Claude plugin schema")
+    invalid_fields = [field for field in DEFAULT_COMPONENT_FIELDS if field in plugin]
+    if invalid_fields:
+        fail(
+            ".claude-plugin/plugin.json must not declare default component paths; "
+            "use root-level auto-discovery instead: "
+            + ", ".join(invalid_fields)
+        )
 
 
 def validate(root: Path) -> str:

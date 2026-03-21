@@ -131,12 +131,27 @@ class TestValidateMarketplaceManifest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             validate_marketplace_manifest(self.tmp)
 
-    def test_marketplace_without_agents_is_ok(self):
+    def test_default_component_paths_are_rejected(self):
         marketplace = {
             "plugins": [
                 {
                     "name": "automerge-swift",
+                    "commands": "./commands/",
                     "skills": "./skills/",
+                    "hooks": "./hooks/hooks.json",
+                }
+            ]
+        }
+        (self.plugin_dir / "marketplace.json").write_text(json.dumps(marketplace))
+        with self.assertRaises(ValidationError):
+            validate_marketplace_manifest(self.tmp)
+
+    def test_marketplace_without_component_paths_is_ok(self):
+        marketplace = {
+            "plugins": [
+                {
+                    "name": "automerge-swift",
+                    "description": "Automerge plugin",
                 }
             ]
         }
@@ -171,10 +186,21 @@ class TestValidatePluginManifest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             validate_plugin_manifest(self.tmp)
 
-    def test_plugin_without_agents_is_ok(self):
+    def test_default_component_paths_are_rejected(self):
         plugin = {
             "name": "automerge-swift",
+            "commands": "./commands/",
             "skills": "./skills/",
+            "hooks": "./hooks/hooks.json",
+        }
+        (self.plugin_dir / "plugin.json").write_text(json.dumps(plugin))
+        with self.assertRaises(ValidationError):
+            validate_plugin_manifest(self.tmp)
+
+    def test_plugin_without_component_paths_is_ok(self):
+        plugin = {
+            "name": "automerge-swift",
+            "version": "1.1.1",
         }
         (self.plugin_dir / "plugin.json").write_text(json.dumps(plugin))
         validate_plugin_manifest(self.tmp)
