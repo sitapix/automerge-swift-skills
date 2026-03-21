@@ -1,0 +1,24 @@
+{
+  "name": "automerge-swift",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Automerge Swift CRDT skills, Claude Code plugin, and MCP server.",
+  "scripts": {
+    "setup": "python3 tooling/scripts/dev/bootstrap_dev.py",
+    "hooks:install": "python3 tooling/scripts/dev/install_git_hooks.py",
+    "start": "node src/server.mjs",
+    "sync-docs": "node scripts/sync-docs.mjs",
+    "lint": "npm run lint:repo",
+    "lint:repo": "python3 tooling/scripts/quality/lint_repo.py",
+    "test": "node scripts/smoke-test.mjs",
+    "test:package": "node scripts/smoke-test-package.mjs",
+    "test:unit": "PYTHONPATH=tooling python3 -m unittest discover -s tooling/tests",
+    "eval:descriptions": "python3 tooling/scripts/quality/evaluate_skill_descriptions.py --dataset tooling/evals/description-triggers.json",
+    "check": "npm run lint && python3 tooling/scripts/quality/validate_plugin.py && npm run eval:descriptions && npm run test:unit && npm run test && npm run test:package",
+    "skills:freshness": "python3 tooling/scripts/quality/skill_freshness.py",
+    "preflight": "npm run check",
+    "version:set": "python3 tooling/scripts/release/set_version.py",
+    "release:check": "npm run preflight"
+  }
+}

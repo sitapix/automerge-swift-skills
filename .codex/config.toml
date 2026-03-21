@@ -1,0 +1,7 @@
+[mcp_servers.filesystem]
+name = "Workspace Filesystem"
+enabled = true
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem", "."]
+cwd = "."
+startup_timeout_sec = 30

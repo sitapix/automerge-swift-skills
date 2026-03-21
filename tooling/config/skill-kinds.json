@@ -1,0 +1,37 @@
+[
+  {
+    "key": "router",
+    "sidebar_label": "Router",
+    "title": "Router Skills",
+    "description": "Broad intake and redirection when the problem is clearly Automerge but still mixed.",
+    "badge_variant": "note"
+  },
+  {
+    "key": "workflow",
+    "sidebar_label": "Workflow",
+    "title": "Workflow Skills",
+    "description": "Guided patterns and integration flows where the steps matter as much as the end state.",
+    "badge_variant": "tip"
+  },
+  {
+    "key": "diag",
+    "sidebar_label": "Diagnostic",
+    "title": "Diagnostic Skills",
+    "description": "Symptom-first debugging for broken behavior, regressions, and failure analysis.",
+    "badge_variant": "caution"
+  },
+  {
+    "key": "decision",
+    "sidebar_label": "Decision",
+    "title": "Decision Skills",
+    "description": "Tradeoff questions where the main task is choosing the right approach.",
+    "badge_variant": "default"
+  },
+  {
+    "key": "ref",
+    "sidebar_label": "Reference",
+    "title": "Reference Skills",
+    "description": "Direct API and behavior reference for users who already know the stack.",
+    "badge_variant": "note"
+  }
+]

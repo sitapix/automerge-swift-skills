@@ -1,0 +1,27 @@
+[
+  {
+    "key": "entrypoints",
+    "title": "Front Door Skills",
+    "description": "Start here when the request is broad, needs triage, or should route through the shortest high-signal entry point."
+  },
+  {
+    "key": "document-api",
+    "title": "Document API And Navigation",
+    "description": "Use these when the work centers on creating documents, ObjId navigation, reading/writing maps, lists, and text."
+  },
+  {
+    "key": "codable-layer",
+    "title": "Codable Mapping",
+    "description": "Use these when encoding or decoding Swift Codable types to/from Automerge documents."
+  },
+  {
+    "key": "sync-collaboration",
+    "title": "Sync And Collaboration",
+    "description": "Use these when syncing documents, forking, merging, tracking history, or building collaborative features."
+  },
+  {
+    "key": "api-reference",
+    "title": "API Reference",
+    "description": "Use these for exact method signatures, type definitions, and dense lookup."
+  }
+]

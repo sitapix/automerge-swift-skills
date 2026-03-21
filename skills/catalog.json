@@ -1,0 +1,175 @@
+{
+  "skills": [
+    {
+      "name": "automerge-swift",
+      "category": "entrypoints",
+      "kind": "router",
+      "entrypoint_priority": 1,
+      "aliases": [
+        "automerge",
+        "automerge swift",
+        "crdt",
+        "collaborative data"
+      ],
+      "related_skills": [
+        "automerge-swift-core",
+        "automerge-swift-codable",
+        "automerge-swift-sync",
+        "automerge-swift-text",
+        "automerge-swift-modeling",
+        "automerge-swift-diag",
+        "automerge-swift-ref"
+      ]
+    },
+    {
+      "name": "automerge-swift-core",
+      "category": "document-api",
+      "kind": "workflow",
+      "entrypoint_priority": 2,
+      "aliases": [
+        "objid",
+        "document api",
+        "put get",
+        "maps lists text",
+        "core api",
+        "scalar value",
+        "document creation"
+      ],
+      "related_skills": [
+        "automerge-swift",
+        "automerge-swift-codable",
+        "automerge-swift-ref"
+      ]
+    },
+    {
+      "name": "automerge-swift-codable",
+      "category": "codable-layer",
+      "kind": "workflow",
+      "entrypoint_priority": 2,
+      "aliases": [
+        "codable",
+        "automerge encoder",
+        "automerge decoder",
+        "counter",
+        "schema strategy",
+        "swift model mapping"
+      ],
+      "related_skills": [
+        "automerge-swift",
+        "automerge-swift-core",
+        "automerge-swift-ref"
+      ]
+    },
+    {
+      "name": "automerge-swift-sync",
+      "category": "sync-collaboration",
+      "kind": "workflow",
+      "entrypoint_priority": 2,
+      "aliases": [
+        "sync",
+        "merge",
+        "fork",
+        "sync state",
+        "patches",
+        "history",
+        "changes",
+        "diffing",
+        "collaborative editing"
+      ],
+      "related_skills": [
+        "automerge-swift",
+        "automerge-swift-core",
+        "automerge-swift-ref"
+      ]
+    },
+    {
+      "name": "automerge-swift-text",
+      "category": "collaborative-text",
+      "kind": "workflow",
+      "entrypoint_priority": 2,
+      "aliases": [
+        "automerge text",
+        "collaborative text",
+        "cursor",
+        "position",
+        "mark",
+        "expand mark",
+        "splice text",
+        "text formatting",
+        "concurrent editing"
+      ],
+      "related_skills": [
+        "automerge-swift",
+        "automerge-swift-core",
+        "automerge-swift-codable",
+        "automerge-swift-ref"
+      ]
+    },
+    {
+      "name": "automerge-swift-modeling",
+      "category": "data-modeling",
+      "kind": "workflow",
+      "entrypoint_priority": 2,
+      "aliases": [
+        "schema design",
+        "initial data",
+        "skeleton",
+        "uttype",
+        "transferable",
+        "save load",
+        "document structure",
+        "merge behavior"
+      ],
+      "related_skills": [
+        "automerge-swift",
+        "automerge-swift-core",
+        "automerge-swift-text",
+        "automerge-swift-ref"
+      ]
+    },
+    {
+      "name": "automerge-swift-diag",
+      "category": "troubleshooting",
+      "kind": "diag",
+      "entrypoint_priority": 2,
+      "aliases": [
+        "error",
+        "debug",
+        "troubleshoot",
+        "doc error",
+        "load error",
+        "binding error",
+        "sync error",
+        "schema mismatch",
+        "merge garbage"
+      ],
+      "related_skills": [
+        "automerge-swift",
+        "automerge-swift-core",
+        "automerge-swift-codable",
+        "automerge-swift-sync",
+        "automerge-swift-ref"
+      ]
+    },
+    {
+      "name": "automerge-swift-ref",
+      "category": "api-reference",
+      "kind": "ref",
+      "entrypoint_priority": 3,
+      "aliases": [
+        "api reference",
+        "method signature",
+        "type definition",
+        "what methods",
+        "error types",
+        "enum cases"
+      ],
+      "related_skills": [
+        "automerge-swift",
+        "automerge-swift-core",
+        "automerge-swift-codable",
+        "automerge-swift-sync"
+      ]
+    }
+  ]
+}

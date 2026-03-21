@@ -1,0 +1,12 @@
+# Generated local/build artifacts
+node_modules/
+.npm-cache/
+.uv-cache/
+__pycache__/
+.pytest_cache/
+mcp-server/dist/
+mcp-server/*.tgz
+.DS_Store
+
+# Local Claude Code settings (user-specific permissions)
+.claude/

@@ -1,0 +1,176 @@
+[
+  {
+    "skill": "automerge-swift",
+    "query": "How do I use Automerge in my Swift app?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift",
+    "query": "How do I set up a URLSession?",
+    "should_trigger": false,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-core",
+    "query": "How do I create an Automerge Document and add keys to a map?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-core",
+    "query": "How do I navigate ObjId to read nested lists?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-codable",
+    "query": "How do I encode my Swift struct into an Automerge document with AutomergeEncoder?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-codable",
+    "query": "What SchemaStrategy should I use for my Codable model?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-text",
+    "query": "How do I implement collaborative text editing with AutomergeText?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-text",
+    "query": "How do marks and formatting work in Automerge text?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-sync",
+    "query": "How do I sync two Automerge documents over a network?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-sync",
+    "query": "How do I fork a document and merge it back later?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-modeling",
+    "query": "How should I structure my Automerge document schema for clean merges?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-diag",
+    "query": "My Automerge decode is failing with a DocError, what do I do?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift-ref",
+    "query": "What methods are available on Document?",
+    "should_trigger": true,
+    "split": "train"
+  },
+  {
+    "skill": "automerge-swift",
+    "query": "I need to add collaborative editing to my iOS app using CRDTs",
+    "should_trigger": true,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift",
+    "query": "How do I implement Core Data migrations?",
+    "should_trigger": false,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-core",
+    "query": "How do I get a ScalarValue from a document key?",
+    "should_trigger": true,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-core",
+    "query": "How do I use SwiftData @Model?",
+    "should_trigger": false,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-codable",
+    "query": "How do I use Counter for concurrent increments?",
+    "should_trigger": true,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-codable",
+    "query": "How do I implement Codable for a JSON API response?",
+    "should_trigger": false,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-text",
+    "query": "How does Cursor work for tracking positions in collaborative text?",
+    "should_trigger": true,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-text",
+    "query": "How do I use UITextView with TextKit 2?",
+    "should_trigger": false,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-sync",
+    "query": "How do I use patches to update my UI when a document changes?",
+    "should_trigger": true,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-sync",
+    "query": "How do I implement CloudKit sync?",
+    "should_trigger": false,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-modeling",
+    "query": "How do I solve the initial data problem in Automerge?",
+    "should_trigger": true,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-modeling",
+    "query": "How do I design a database schema for Core Data?",
+    "should_trigger": false,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-diag",
+    "query": "Why did my Automerge merge produce garbage data?",
+    "should_trigger": true,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-diag",
+    "query": "Why is my SwiftUI view not updating?",
+    "should_trigger": false,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-ref",
+    "query": "What are the enum cases for Value in Automerge?",
+    "should_trigger": true,
+    "split": "validation"
+  },
+  {
+    "skill": "automerge-swift-ref",
+    "query": "What methods does URLSession have?",
+    "should_trigger": false,
+    "split": "validation"
+  }
+]

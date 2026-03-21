@@ -1,0 +1,48 @@
+{
+  "name": "automerge-swift-marketplace",
+  "owner": {
+    "name": "sitapix"
+  },
+  "metadata": {
+    "description": "Automerge Swift CRDT skills, agents, and hooks — Document API, Codable mapping, sync protocol, auditing, and guardrails",
+    "version": "1.1.0"
+  },
+  "plugins": [
+    {
+      "name": "automerge-swift",
+      "source": "./",
+      "description": "Skills, agents, and hooks for Automerge Swift CRDTs — Document API, Codable mapping, sync protocol, fork/merge, patches, auditing, and guardrails",
+      "homepage": "https://github.com/sitapix/automerge-swift-skills",
+      "repository": "https://github.com/sitapix/automerge-swift-skills",
+      "version": "1.1.0",
+      "author": {
+        "name": "sitapix"
+      },
+      "license": "MIT",
+      "keywords": [
+        "automerge",
+        "crdt",
+        "swift",
+        "collaborative",
+        "sync",
+        "document",
+        "codable",
+        "real-time",
+        "merge",
+        "conflict-free"
+      ],
+      "tags": [
+        "automerge",
+        "crdt",
+        "swift",
+        "sync",
+        "collaborative-editing"
+      ],
+      "category": "productivity",
+      "commands": "./commands/",
+      "skills": "./skills/",
+      "agents": "./agents/",
+      "hooks": "./hooks/hooks.json"
+    }
+  ]
+}

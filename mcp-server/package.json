@@ -1,0 +1,36 @@
+{
+  "name": "automerge-swift-mcp",
+  "version": "1.1.0",
+  "type": "module",
+  "description": "MCP server for Automerge Swift skills, prompts, and vendored docs from any MCP-compatible AI coding tool",
+  "author": "sitapix",
+  "license": "MIT",
+  "scripts": {
+    "prepack": "node ./scripts/prepare-package.mjs",
+    "postpack": "node ./scripts/cleanup-package.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sitapix/automerge-swift-skills",
+    "directory": "mcp-server"
+  },
+  "bin": {
+    "automerge-swift-mcp": "./bin/automerge-swift-mcp.mjs"
+  },
+  "keywords": [
+    "mcp",
+    "automerge",
+    "swift",
+    "crdt",
+    "documentation",
+    "model-context-protocol"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "README.md"
+  ]
+}

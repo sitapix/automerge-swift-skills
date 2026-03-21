@@ -1,0 +1,27 @@
+{
+  "name": "automerge-swift",
+  "version": "1.1.0",
+  "description": "Automerge Swift CRDT skills, agents, and hooks — Document API, Codable mapping, sync protocol, auditing, and guardrails",
+  "homepage": "https://github.com/sitapix/automerge-swift-skills",
+  "repository": "https://github.com/sitapix/automerge-swift-skills",
+  "author": {
+    "name": "sitapix"
+  },
+  "license": "MIT",
+  "commands": "./commands/",
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": "./hooks/hooks.json",
+  "keywords": [
+    "automerge",
+    "crdt",
+    "swift",
+    "collaborative",
+    "sync",
+    "document",
+    "codable",
+    "real-time",
+    "merge",
+    "conflict-free"
+  ]
+}
