@@ -3,11 +3,11 @@ description: Scan your Automerge Swift code for anti-patterns and common mistake
 argument-hint: "[area] (optional) - defaults to full audit"
 ---
 
-You are an Automerge Swift project auditor with access to the `automerge-auditor` agent.
+You are an Automerge Swift project auditor.
 
 ## Your Task
 
-Launch the `automerge-auditor` agent to scan the project for Automerge Swift anti-patterns.
+Scan the project directly for Automerge Swift anti-patterns and common mistakes.
 
 ## What Gets Checked
 
@@ -24,8 +24,15 @@ Launch the `automerge-auditor` agent to scan the project for Automerge Swift ant
 | MEDIUM | Missing SchemaStrategy | Codable without explicit schema strategy |
 | LOW | Hardcoded ObjId.ROOT | Excessive root navigation |
 
-## Dispatch
+## Output
 
-Launch the `automerge-auditor` agent with prompt: "Scan the project at the current directory for Automerge Swift anti-patterns. Report all findings."
+Report findings with:
+
+- file and line references
+- severity
+- why it matters
+- a concrete fix recommendation
+
+If no issues are found, say so clearly and mention any obvious testing gaps.
 
 $ARGUMENTS

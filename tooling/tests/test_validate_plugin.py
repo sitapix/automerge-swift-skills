@@ -9,6 +9,7 @@ from scripts.quality.validate_plugin import (
     discover_skill_dirs,
     fail,
     validate_catalog,
+    validate_plugin_manifest,
     validate_marketplace_manifest,
 )
 
@@ -141,6 +142,42 @@ class TestValidateMarketplaceManifest(unittest.TestCase):
         }
         (self.plugin_dir / "marketplace.json").write_text(json.dumps(marketplace))
         validate_marketplace_manifest(self.tmp)
+
+
+class TestValidatePluginManifest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(__file__).parent / "_tmp_plugin_manifest"
+        self.tmp.mkdir(exist_ok=True)
+        self.plugin_dir = self.tmp / ".claude-plugin"
+        self.plugin_dir.mkdir()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_no_plugin_manifest_is_ok(self):
+        validate_plugin_manifest(self.tmp)
+
+    def test_invalid_json_raises(self):
+        (self.plugin_dir / "plugin.json").write_text("{invalid")
+        with self.assertRaises(ValidationError):
+            validate_plugin_manifest(self.tmp)
+
+    def test_agents_field_is_rejected(self):
+        plugin = {
+            "name": "automerge-swift",
+            "agents": "./agents/",
+        }
+        (self.plugin_dir / "plugin.json").write_text(json.dumps(plugin))
+        with self.assertRaises(ValidationError):
+            validate_plugin_manifest(self.tmp)
+
+    def test_plugin_without_agents_is_ok(self):
+        plugin = {
+            "name": "automerge-swift",
+            "skills": "./skills/",
+        }
+        (self.plugin_dir / "plugin.json").write_text(json.dumps(plugin))
+        validate_plugin_manifest(self.tmp)
 
 
 if __name__ == "__main__":

@@ -110,6 +110,20 @@ def validate_marketplace_manifest(root: Path) -> None:
         )
 
 
+def validate_plugin_manifest(root: Path) -> None:
+    plugin_path = root / ".claude-plugin" / "plugin.json"
+    if not plugin_path.exists():
+        return
+
+    try:
+        plugin = json.loads(plugin_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        fail(f".claude-plugin/plugin.json is not valid JSON: {exc}")
+
+    if "agents" in plugin:
+        fail(".claude-plugin/plugin.json must not declare 'agents' for the current Claude plugin schema")
+
+
 def validate(root: Path) -> str:
     executable = resolve_skills_ref()
     skill_dirs = discover_skill_dirs(root)
@@ -118,6 +132,7 @@ def validate(root: Path) -> str:
         run_skills_ref_validate(executable, skill_dir, root)
 
     validate_catalog(root, skill_dirs)
+    validate_plugin_manifest(root)
     validate_marketplace_manifest(root)
 
     return f"Validated {len(skill_dirs)} skills with skills-ref."

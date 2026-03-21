@@ -57,7 +57,7 @@ You don't need to know which skill to use — just describe your problem and the
 
 ### 5. Audit Your Code
 
-Scan your Automerge Swift code for anti-patterns and common mistakes:
+Run the audit command to scan your Automerge Swift code for anti-patterns and common mistakes:
 
 ```
 /automerge-swift:audit
