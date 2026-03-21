@@ -84,6 +84,32 @@ def validate_catalog(root: Path, skill_dirs: list[Path]) -> None:
         fail("catalog.json out of sync:\n" + "\n".join(issues))
 
 
+def validate_marketplace_manifest(root: Path) -> None:
+    marketplace_path = root / ".claude-plugin" / "marketplace.json"
+    if not marketplace_path.exists():
+        return
+
+    try:
+        marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        fail(f".claude-plugin/marketplace.json is not valid JSON: {exc}")
+
+    plugins = marketplace.get("plugins")
+    if not isinstance(plugins, list):
+        fail(".claude-plugin/marketplace.json must contain a top-level 'plugins' array")
+
+    invalid_agents = [
+        plugin.get("name", f"plugins[{index}]")
+        for index, plugin in enumerate(plugins)
+        if isinstance(plugin, dict) and "agents" in plugin
+    ]
+    if invalid_agents:
+        fail(
+            ".claude-plugin/marketplace.json plugins must not declare 'agents': "
+            + ", ".join(invalid_agents)
+        )
+
+
 def validate(root: Path) -> str:
     executable = resolve_skills_ref()
     skill_dirs = discover_skill_dirs(root)
@@ -92,6 +118,7 @@ def validate(root: Path) -> str:
         run_skills_ref_validate(executable, skill_dir, root)
 
     validate_catalog(root, skill_dirs)
+    validate_marketplace_manifest(root)
 
     return f"Validated {len(skill_dirs)} skills with skills-ref."
 

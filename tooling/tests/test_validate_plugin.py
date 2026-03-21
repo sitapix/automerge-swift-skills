@@ -9,6 +9,7 @@ from scripts.quality.validate_plugin import (
     discover_skill_dirs,
     fail,
     validate_catalog,
+    validate_marketplace_manifest,
 )
 
 
@@ -91,6 +92,55 @@ class TestValidateCatalog(unittest.TestCase):
         (self.skills_dir / "catalog.json").write_text(json.dumps(catalog))
         with self.assertRaises(ValidationError):
             validate_catalog(self.tmp, [])
+
+
+class TestValidateMarketplaceManifest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(__file__).parent / "_tmp_marketplace"
+        self.tmp.mkdir(exist_ok=True)
+        self.plugin_dir = self.tmp / ".claude-plugin"
+        self.plugin_dir.mkdir()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_no_marketplace_is_ok(self):
+        validate_marketplace_manifest(self.tmp)
+
+    def test_invalid_json_raises(self):
+        (self.plugin_dir / "marketplace.json").write_text("{invalid")
+        with self.assertRaises(ValidationError):
+            validate_marketplace_manifest(self.tmp)
+
+    def test_missing_plugins_array_raises(self):
+        (self.plugin_dir / "marketplace.json").write_text(json.dumps({"name": "x"}))
+        with self.assertRaises(ValidationError):
+            validate_marketplace_manifest(self.tmp)
+
+    def test_agents_field_is_rejected(self):
+        marketplace = {
+            "plugins": [
+                {
+                    "name": "automerge-swift",
+                    "agents": "./agents/",
+                }
+            ]
+        }
+        (self.plugin_dir / "marketplace.json").write_text(json.dumps(marketplace))
+        with self.assertRaises(ValidationError):
+            validate_marketplace_manifest(self.tmp)
+
+    def test_marketplace_without_agents_is_ok(self):
+        marketplace = {
+            "plugins": [
+                {
+                    "name": "automerge-swift",
+                    "skills": "./skills/",
+                }
+            ]
+        }
+        (self.plugin_dir / "marketplace.json").write_text(json.dumps(marketplace))
+        validate_marketplace_manifest(self.tmp)
 
 
 if __name__ == "__main__":
