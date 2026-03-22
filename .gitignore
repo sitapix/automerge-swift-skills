@@ -5,7 +5,7 @@ node_modules/
 __pycache__/
 .pytest_cache/
 mcp-server/dist/
-mcp-server/*.tgz
+*.tgz
 .DS_Store
 
 # Local Claude Code settings (user-specific permissions)

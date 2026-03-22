@@ -21,7 +21,7 @@ Automerge Swift gives AI coding assistants focused guidance on the [Automerge Sw
 /plugin marketplace add sitapix/automerge-swift-skills
 
 # Install plugin
-/plugin install automerge-swift-skills@automerge-swift
+/plugin install automerge-swift@automerge-swift-marketplace
 ```
 
 ### MCP (VS Code, Cursor, Gemini CLI, and more)

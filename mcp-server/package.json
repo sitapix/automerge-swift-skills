@@ -1,6 +1,6 @@
 {
   "name": "automerge-swift-mcp",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "description": "MCP server for Automerge Swift skills, prompts, and vendored docs from any MCP-compatible AI coding tool",
   "author": "sitapix",
