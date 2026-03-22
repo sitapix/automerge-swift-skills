@@ -46,36 +46,45 @@ def main() -> int:
         raise SystemExit("ERROR: version must use X.Y.Z format")
 
     root = Path(args.root).resolve()
+
+    claude_code = load_json(root / "claude-code.json")
+    plugin = load_json(root / ".claude-plugin" / "plugin.json")
+    marketplace = load_json(root / ".claude-plugin" / "marketplace.json")
+    package = load_json(root / "package.json")
+
+    claude_code["version"] = args.version
+    plugin["version"] = args.version
+    package["version"] = args.version
+
+    marketplace.setdefault("metadata", {})["version"] = args.version
+    plugins = marketplace.get("plugins", [])
+    if len(plugins) != 1:
+        raise SystemExit("ERROR: marketplace manifest must contain exactly one plugin entry")
+    plugins[0]["version"] = args.version
+
+    mcp_package_path = root / "mcp-server" / "package.json"
+    mcp_package = load_json(mcp_package_path) if mcp_package_path.exists() else None
+    if mcp_package is not None:
+        mcp_package["version"] = args.version
+
     targets = [
-        root / "claude-code.json",
-        root / ".claude-plugin" / "plugin.json",
-        root / ".claude-plugin" / "marketplace.json",
-        root / "package.json",
-        root / "mcp-server" / "package.json",
+        (root / "claude-code.json", claude_code),
+        (root / ".claude-plugin" / "plugin.json", plugin),
+        (root / ".claude-plugin" / "marketplace.json", marketplace),
+        (root / "package.json", package),
     ]
+    if mcp_package is not None:
+        targets.append((mcp_package_path, mcp_package))
 
-    updated: list[Path] = []
-    for path in targets:
-        if not path.exists():
-            continue
-        data = load_json(path)
-        data["version"] = args.version
-
-        if path.name == "marketplace.json":
-            data.setdefault("metadata", {})["version"] = args.version
-            plugins = data.get("plugins", [])
-            if len(plugins) == 1:
-                plugins[0]["version"] = args.version
-
+    for path, data in targets:
         write_json(path, data)
-        updated.append(path)
 
     server_path = root / "src" / "server.mjs"
     if server_path.exists():
         update_server_info_version(server_path, args.version)
-        updated.append(server_path)
+        targets.append((server_path, None))
 
-    for path in updated:
+    for path, _ in targets:
         print(f"Updated {path.relative_to(root).as_posix()} -> {args.version}")
 
     return 0

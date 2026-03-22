@@ -1,45 +1,21 @@
 {
   "name": "automerge-swift",
   "version": "1.1.2",
-  "description": "Automerge Swift CRDT skills, commands, and hooks \u2014 Document API, Codable mapping, sync protocol, auditing, and guardrails",
+  "description": "Automerge Swift CRDT skills, commands, and hooks — Document API, Codable mapping, sync protocol, auditing, and guardrails",
   "author": "sitapix",
   "license": "MIT",
-  "commands": [
-    "./commands/ask.md",
-    "./commands/audit.md"
-  ],
   "skills": [
     {
       "name": "automerge-swift",
-      "description": "Use when working with Automerge Swift, automerge-swift package, CRDTs in Swift, collaborative/real-time data, Document merge/fork/sync, or any code importing Automerge. Routes to specialized sub-skills for core API, Codable mapping, sync protocol, and API reference."
-    },
-    {
-      "name": "automerge-swift-core",
-      "description": "Use when creating Automerge documents, navigating with ObjId, reading/writing maps/lists/text using the core Document API, working with ScalarValue or Value types, or needing fine-grained control over document mutations."
-    },
-    {
-      "name": "automerge-swift-codable",
-      "description": "Use when encoding/decoding Swift Codable types to/from Automerge documents, working with AutomergeEncoder or AutomergeDecoder, using AutomergeText for collaborative text fields, using Counter for concurrent counters, or choosing SchemaStrategy."
-    },
-    {
-      "name": "automerge-swift-text",
-      "description": "Use when working with collaborative text editing in Automerge \u2014 AutomergeText, Cursor, Position, Mark, ExpandMark, spliceText, updateText, text marks/formatting, or building a collaborative text editor."
-    },
-    {
-      "name": "automerge-swift-sync",
-      "description": "Use when synchronizing Automerge documents between peers, implementing sync protocols over network/WebSocket, forking and merging documents, tracking change history, using patches for UI updates, or working with SyncState types."
+      "description": "Use when working with Automerge Swift, automerge-swift package, CRDTs in Swift, collaborative/real-time data, Document merge/fork/sync, or any code importing Automerge. Routes to specialized skills and agents."
     },
     {
       "name": "automerge-swift-modeling",
-      "description": "Use when designing Automerge document schemas, choosing between Text and String, structuring nested data for correct merges, solving the initial data problem, or setting up UTType/Transferable for file sharing."
+      "description": "Use when designing Automerge document schemas, choosing between Text and String, structuring nested data for correct merges, solving the initial data problem, or setting up UTType/Transferable."
     },
     {
       "name": "automerge-swift-diag",
-      "description": "Use when debugging Automerge Swift errors, decoding failures, binding crashes, sync message corruption, type conversion errors, schema mismatches after merge, or any Automerge runtime problem."
-    },
-    {
-      "name": "automerge-swift-ref",
-      "description": "Use when you need to look up a specific Automerge Swift API \u2014 method signatures, property types, error types, enum cases, or protocol conformances. Dense reference for quick lookup."
+      "description": "Use when debugging Automerge Swift errors, decoding failures, binding crashes, sync message corruption, type conversion errors, or schema mismatches after merge."
     }
   ]
 }

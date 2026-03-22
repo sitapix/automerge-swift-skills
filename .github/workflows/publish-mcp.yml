@@ -1,14 +1,23 @@
-name: Publish MCP Package
+name: Publish MCP
 
 on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to npm instead of only running dry-run checks"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
   push:
     tags:
-      - "v*"
       - "mcp-v*"
-  workflow_dispatch:
+      - "v*"
 
 jobs:
-  publish:
+  publish-mcp:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,10 +46,11 @@ jobs:
       - name: Install skills-ref
         run: uv tool install --from git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref skills-ref
 
-      - name: Run checks
+      - name: Validate repo
         run: npm run check
 
-      - name: Publish mcp-server package
+      - name: Publish to npm
+        if: github.ref_type == 'tag' || github.event.inputs.publish == 'true'
         working-directory: ./mcp-server
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

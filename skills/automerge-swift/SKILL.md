@@ -27,33 +27,43 @@ Use this router when the request is clearly about Automerge Swift but not yet sc
 
 ## Quick Decision
 
-Choose the topic family first, then the skill role:
+Choose the topic family first, then the right destination:
 
-- Document creation, ObjId navigation, reading/writing maps/lists -> `/skill automerge-swift-core`
-- Codable structs, AutomergeEncoder/Decoder, Counter, schema strategy -> `/skill automerge-swift-codable`
-- Collaborative text, AutomergeText, Cursor, Mark, spliceText, formatting -> `/skill automerge-swift-text`
-- Sync protocol, fork/merge, SyncState, patches, history, diffing -> `/skill automerge-swift-sync`
 - Schema design, initial data problem, UTType, save/load, document structure -> `/skill automerge-swift-modeling`
 - Errors, debugging, troubleshooting, schema mismatch, merge problems -> `/skill automerge-swift-diag`
-- Exact method signature, type definition, "what methods exist on X" -> `/skill automerge-swift-ref`
+- Document creation, ObjId navigation, reading/writing maps/lists -> launch **automerge-reference** agent
+- Codable structs, AutomergeEncoder/Decoder, Counter, schema strategy -> launch **automerge-reference** agent
+- Collaborative text, AutomergeText, Cursor, Mark, spliceText, formatting -> launch **automerge-reference** agent
+- Sync protocol, fork/merge, SyncState, patches, history, diffing -> launch **automerge-reference** agent
+- Exact method signature, type definition, "what methods exist on X" -> launch **automerge-reference** agent
 
-## Core Guidance
+## How to Route
 
-Use the shared routing taxonomy from `skills/catalog.json`:
+**Registered skills** (invoke via `/skill`):
 
-- `router`: broad intake and redirection (this skill)
-- `workflow`: guided implementation patterns (`automerge-swift-core`, `automerge-swift-codable`, `automerge-swift-sync`, `automerge-swift-text`, `automerge-swift-modeling`)
-- `diag`: symptom-based troubleshooting (`automerge-swift-diag`)
-- `ref`: direct API and behavior reference (`automerge-swift-ref`)
+| Skill | Use for |
+|-------|---------|
+| `automerge-swift` | Broad routing — start here when the right destination is not obvious |
+| `automerge-swift-modeling` | Schema design, initial data problem, UTType, save/load |
+| `automerge-swift-diag` | Errors, debugging, troubleshooting, merge problems |
+
+**Domain agents** (launch via Agent tool with the given `subagent_type`):
+
+| Agent | subagent_type | Covers |
+|-------|--------------|---------|
+| automerge-reference | `automerge-swift:automerge-reference` | Document API, ObjId, Codable mapping, collaborative text, sync protocol, API reference |
+| automerge-auditor | `automerge-swift:automerge-auditor` | Automated code scan for Automerge anti-patterns |
+
+To launch an agent, pass the user's question as the prompt. The agent runs in isolated context and returns a focused answer without polluting the main conversation.
 
 ## When Multiple Apply
 
-- **"Map my model to a document"** -> `automerge-swift-modeling` for schema decisions, then `automerge-swift-codable` for implementation
-- **"Build a collaborative text editor"** -> `automerge-swift-text` for text patterns, then `automerge-swift-sync` for sync
-- **"Sync and update UI"** -> `automerge-swift-sync` for the sync loop, then check patches section for UI updates
-- **"Build a collaborative feature from scratch"** -> `automerge-swift-modeling` for schema, then `automerge-swift-codable` or core API
-- **"My merge produced garbage"** -> `automerge-swift-diag` for diagnosis
-- **"What's the exact signature for X"** -> `automerge-swift-ref` directly
+- **"Map my model to a document"** -> `/skill automerge-swift-modeling` for schema decisions, then launch **automerge-reference** agent for Codable implementation
+- **"Build a collaborative text editor"** -> launch **automerge-reference** agent (covers both text and sync)
+- **"Sync and update UI"** -> launch **automerge-reference** agent for the sync loop and patches
+- **"Build a collaborative feature from scratch"** -> `/skill automerge-swift-modeling` for schema, then launch **automerge-reference** agent
+- **"My merge produced garbage"** -> `/skill automerge-swift-diag` for diagnosis
+- **"What's the exact signature for X"** -> launch **automerge-reference** agent directly
 
 ## Critical Mental Model
 
@@ -112,12 +122,9 @@ UTType.automerge  // com.github.automerge, conforms to public.data
 // Transferable conformance is built-in
 ```
 
-## Related Skills
+## Related Skills and Agents
 
-- `/skill automerge-swift-core` for low-level Document API work.
-- `/skill automerge-swift-codable` for Codable mapping patterns.
-- `/skill automerge-swift-text` for collaborative text editing.
-- `/skill automerge-swift-sync` for sync protocol and collaboration.
 - `/skill automerge-swift-modeling` for schema design and save/load.
 - `/skill automerge-swift-diag` for errors and troubleshooting.
-- `/skill automerge-swift-ref` for exact API signatures and type definitions.
+- Launch **automerge-reference** agent for Document API, Codable, text, sync, and API reference lookups.
+- Launch **automerge-auditor** agent for code scanning.

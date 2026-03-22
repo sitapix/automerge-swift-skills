@@ -15,10 +15,13 @@
     "test:package": "node scripts/smoke-test-package.mjs",
     "test:unit": "PYTHONPATH=tooling python3 -m unittest discover -s tooling/tests",
     "eval:descriptions": "python3 tooling/scripts/quality/evaluate_skill_descriptions.py --dataset tooling/evals/description-triggers.json",
-    "check": "npm run lint && python3 tooling/scripts/quality/validate_plugin.py && npm run eval:descriptions && npm run test:unit && npm run test && npm run test:package",
+    "agents:build": "node scripts/build-agents.mjs",
+    "agents:check": "node scripts/build-agents.mjs --check",
+    "check": "npm run lint && npm run agents:check && python3 tooling/scripts/quality/validate_plugin.py && npm run eval:descriptions && npm run test:unit && npm run test && npm run test:package",
     "skills:freshness": "python3 tooling/scripts/quality/skill_freshness.py",
     "preflight": "npm run check",
     "version:set": "python3 tooling/scripts/release/set_version.py",
+    "release": "bash tooling/scripts/release/release.sh",
     "release:check": "npm run preflight"
   }
 }

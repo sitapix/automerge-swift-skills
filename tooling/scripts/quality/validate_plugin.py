@@ -99,17 +99,23 @@ def validate_marketplace_manifest(root: Path) -> None:
     if not isinstance(plugins, list):
         fail(".claude-plugin/marketplace.json must contain a top-level 'plugins' array")
 
-    invalid_plugins = [
-        plugin.get("name", f"plugins[{index}]")
-        for index, plugin in enumerate(plugins)
-        if isinstance(plugin, dict) and any(field in plugin for field in DEFAULT_COMPONENT_FIELDS)
-    ]
-    if invalid_plugins:
-        fail(
-            ".claude-plugin/marketplace.json plugins must not declare default component paths; "
-            "use root-level auto-discovery instead: "
-            + ", ".join(invalid_plugins)
-        )
+    # Component paths must be explicit arrays, not directory strings
+    for index, plugin in enumerate(plugins):
+        if not isinstance(plugin, dict):
+            continue
+        for field in ("skills", "agents", "commands"):
+            value = plugin.get(field)
+            if value is None:
+                continue
+            if isinstance(value, str):
+                fail(
+                    f".claude-plugin/marketplace.json plugins[{index}].{field}: must be an array of paths, not a directory string"
+                )
+            if isinstance(value, list):
+                for p in value:
+                    resolved = root / p
+                    if not resolved.exists():
+                        fail(f".claude-plugin/marketplace.json plugins[{index}].{field}: missing path {p}")
 
 
 def validate_plugin_manifest(root: Path) -> None:
@@ -122,13 +128,21 @@ def validate_plugin_manifest(root: Path) -> None:
     except json.JSONDecodeError as exc:
         fail(f".claude-plugin/plugin.json is not valid JSON: {exc}")
 
-    invalid_fields = [field for field in DEFAULT_COMPONENT_FIELDS if field in plugin]
-    if invalid_fields:
-        fail(
-            ".claude-plugin/plugin.json must not declare default component paths; "
-            "use root-level auto-discovery instead: "
-            + ", ".join(invalid_fields)
-        )
+    # Component paths must be explicit arrays, not directory strings (auto-discovery)
+    for field in ("skills", "agents", "commands"):
+        value = plugin.get(field)
+        if value is None:
+            continue
+        if isinstance(value, str):
+            fail(
+                f".claude-plugin/plugin.json {field}: must be an array of paths, not a directory string. "
+                "Use explicit arrays to control which skills/agents are registered."
+            )
+        if isinstance(value, list):
+            for p in value:
+                resolved = root / p
+                if not resolved.exists():
+                    fail(f".claude-plugin/plugin.json {field}: missing path {p}")
 
 
 def validate(root: Path) -> str:

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Pre-push: full validation — the last gate before code hits the remote.
+
 set -eu
 
 ROOT=$(git rev-parse --show-toplevel)

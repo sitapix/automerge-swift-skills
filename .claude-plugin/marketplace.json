@@ -38,7 +38,20 @@
         "sync",
         "collaborative-editing"
       ],
-      "category": "productivity"
+      "category": "productivity",
+      "commands": [
+        "./commands/ask.md",
+        "./commands/audit.md"
+      ],
+      "agents": [
+        "./agents/automerge-auditor.md",
+        "./agents/automerge-reference.md"
+      ],
+      "skills": [
+        "./skills/automerge-swift",
+        "./skills/automerge-swift-diag",
+        "./skills/automerge-swift-modeling"
+      ]
     }
   ],
   "version": "1.1.2"

@@ -1,62 +1,82 @@
 # AGENTS.md
 
-Use the `filesystem` MCP server when MCP-based file access is needed for this workspace.
+This repo is the Automerge Swift Skills workspace — a Claude Code plugin and MCP server providing Automerge Swift CRDT expertise.
 
-This repo no longer depends on the custom `automerge_swift_docs` MCP server for normal agent work. Prefer reading local files directly or through the filesystem MCP.
+## Architecture
+
+Automerge Swift Skills uses a two-tier delivery model to keep AI context clean:
+
+- **3 registered skills** load inline in Claude Code for routing, schema design, and debugging
+- **1 domain agent** (automerge-reference) bundles the other 5 skills into an isolated-context reference lookup
+- **1 audit agent** (automerge-auditor) scans code for Automerge anti-patterns
+- **MCP server** serves all 8 skills directly for non-Claude clients
+
+The domain agent is a generated file. Edit the source skill in `skills/*/SKILL.md` and rebuild with `node scripts/build-agents.mjs`.
 
 ## Plugin structure
 
-This repo is a Claude Code plugin. The plugin manifest is at `.claude-plugin/plugin.json` and top-level registration at `claude-code.json`.
+- `skills/`: All 8 skill source files (SKILL.md per directory)
+- `agents/automerge-auditor.md`: Code scanning agent (hand-authored)
+- `agents/automerge-reference.md`: Domain reference agent (generated from 5 skills by `scripts/build-agents.mjs`)
+- `commands/ask.md`: Natural-language entry point — routes to skills or agents
+- `commands/audit.md`: Dispatches the automerge-auditor agent
+- `skills/catalog.json`: Machine-readable routing metadata
+- `.agents/`: Symlinks for Agent Skills discovery
+- `.claude-plugin/`: Plugin and marketplace manifests
 
-- `commands/ask.md`: Natural-language entry point — routes to the right skill via `/ask`.
-- `commands/audit.md`: Dispatches the `automerge-auditor` agent to scan for anti-patterns via `/audit`.
-- `skills/`: Claude Code skills for working with the Automerge Swift API.
-- `skills/catalog.json`: Machine-readable routing metadata (categories, kinds, aliases, relationships).
-- `skills/automerge-swift/SKILL.md`: Router skill — start here when the right specialist is not obvious.
-- `agents/automerge-auditor.md`: Autonomous agent that scans Swift code for Automerge anti-patterns.
-- `hooks/`: Plugin hooks — session-start detection, error nudges, and write-time guardrails.
-- `.agents/skills`: Symlink for Agent Skills discovery.
+**Registered skills** (loaded inline in Claude Code):
+- `automerge-swift` — router, start here for broad questions
+- `automerge-swift-modeling` — schema design, initial data problem
+- `automerge-swift-diag` — errors, debugging, troubleshooting
 
-When adding or modifying a skill:
-- Update `skills/catalog.json` with the skill's category, kind, priority, aliases, and related skills.
-- Link the skill from the router (`skills/automerge-swift/SKILL.md`) if it should be discoverable.
-- Directory name must match the `name` field in the skill's frontmatter.
+**Agent-backed skills** (run in isolated context via automerge-reference):
+- `automerge-swift-core` — Document API, ObjId, maps/lists
+- `automerge-swift-codable` — AutomergeEncoder/Decoder, Counter
+- `automerge-swift-text` — AutomergeText, Cursor, Mark, spliceText
+- `automerge-swift-sync` — sync protocol, fork/merge, patches
+- `automerge-swift-ref` — API signatures and type definitions
 
-## Key files and directories
+## When Adding a Skill
 
-- `README.md`: project overview and local commands.
-- `docs/overview.md`: repo map and what content agents should read first.
-- `docs/workflows.md`: maintenance steps for syncing vendored docs and validating the repo.
-- `src/server.mjs`: MCP server implementation.
-- `src/catalog.mjs`: vendored doc indexing and search logic.
-- `vendor/automerge-swift/`: vendored Automerge Swift Markdown docs and generated symbol docs.
+1. Create `skills/<skill-name>/SKILL.md` with front matter matching the directory name.
+2. Add a catalog entry in `skills/catalog.json`.
+3. Add it to the domain agent in `scripts/build-agents.mjs`.
+4. Run `node scripts/build-agents.mjs` to regenerate the agent file.
+5. If the skill should be a registered entry point (rare — only 3 today), add it to `plugin.json` and update the router.
+6. Run `npm run check` to validate everything.
 
-## Tooling
+## Key files
 
-- `tooling/config/`: Skill category and kind definitions.
-- `tooling/scripts/quality/`: Repo lint (`lint_repo.py`) and plugin validation (`validate_plugin.py`).
-- `tooling/scripts/release/`: Version sync (`set_version.py`) across all manifests.
-- `tooling/scripts/dev/`: Bootstrap (`bootstrap_dev.py`) and git hooks installer.
-- `tooling/hooks/`: Claude Code hooks configuration.
-- `.githooks/`: Git pre-commit and pre-push hooks.
-- `.github/workflows/`: CI validation workflow.
+- `src/server.mjs`: MCP server implementation
+- `src/catalog.mjs`: Vendored doc indexing and search
+- `vendor/automerge-swift/`: Vendored Automerge Swift docs and symbols
+- `docs/overview.md`: Repo map for agents
+- `docs/workflows.md`: Maintenance workflows
+
+## Hooks and Validation
+
+- **pre-commit** (~2s): rebuilds agents, stages, lint + staleness check
+- **pre-push**: runs full `npm run check` — lint, agents:check, plugin validation, description evals, unit tests, smoke tests, package tests
+- **CI** (validate.yml): runs `npm run check` on every push and PR
 
 ## Common commands
 
-- `npm run setup`: Bootstrap dev environment (deps, skills-ref, git hooks).
-- `npm run check`: Full validation (lint + plugin validation + smoke test).
-- `npm run lint`: Repo hygiene checks.
-- `npm run test`: MCP server smoke test.
-- `npm run version:set -- X.Y.Z`: Sync version across all manifests.
-- `npm run sync-docs`: Refresh vendored Automerge Swift docs.
+```bash
+npm run setup              # bootstrap dev environment
+npm run check              # full validation pipeline
+npm run lint               # repo hygiene
+npm run agents:build       # rebuild domain agents from skills
+npm run agents:check       # verify agents match source skills
+npm run test               # MCP smoke test (+ routing accuracy)
+npm run sync-docs          # refresh vendored Automerge Swift docs
+npm run version:set -- X.Y.Z  # sync version across manifests
+npm run release -- X.Y.Z   # one-command release
+```
 
-When a task involves Automerge Swift documentation:
+## Releasing
 
-- Search `vendor/automerge-swift/` first.
-- Prefer the local Markdown docs over guessing API behavior.
-- Use `rg` for lookup and open only the relevant files.
+```bash
+npm run release -- X.Y.Z
+```
 
-When a task involves this MCP project itself:
-
-- Treat `docs/` as the high-level context.
-- Treat `src/` as the source of truth for behavior.
+Bumps version, rebuilds agents, validates, commits, tags, and pushes. CI deploys.

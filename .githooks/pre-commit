@@ -1,8 +1,19 @@
 #!/bin/sh
 
+# Pre-commit: regenerate derived files, stage them, run fast checks.
+# Full validation runs in pre-push.
+
 set -eu
 
 ROOT=$(git rev-parse --show-toplevel)
 cd "$ROOT"
 
-npm run check
+# ── Regenerate derived files from source skills ──────────────────────
+node scripts/build-agents.mjs
+
+# ── Stage regenerated files ──────────────────────────────────────────
+git add agents/automerge-reference.md
+
+# ── Fast checks only ─────────────────────────────────────────────────
+npm run lint
+node scripts/build-agents.mjs --check

@@ -186,12 +186,23 @@ class TestValidatePluginManifest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             validate_plugin_manifest(self.tmp)
 
-    def test_default_component_paths_are_rejected(self):
+    def test_explicit_component_paths_validated_when_present(self):
+        # Explicit paths that resolve should pass
+        (self.tmp / "skills" / "test-skill").mkdir(parents=True, exist_ok=True)
+        (self.tmp / "agents").mkdir(parents=True, exist_ok=True)
+        (self.tmp / "agents" / "test.md").write_text("---\nname: test\n---\ntest")
         plugin = {
             "name": "automerge-swift",
-            "commands": "./commands/",
-            "skills": "./skills/",
-            "hooks": "./hooks/hooks.json",
+            "skills": ["./skills/test-skill"],
+            "agents": ["./agents/test.md"],
+        }
+        (self.plugin_dir / "plugin.json").write_text(json.dumps(plugin))
+        validate_plugin_manifest(self.tmp)
+
+    def test_missing_explicit_paths_are_rejected(self):
+        plugin = {
+            "name": "automerge-swift",
+            "skills": ["./skills/nonexistent"],
         }
         (self.plugin_dir / "plugin.json").write_text(json.dumps(plugin))
         with self.assertRaises(ValidationError):

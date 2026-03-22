@@ -384,4 +384,122 @@ await probeTransport("\n\n");
 await probeRawJsonTransport();
 await probeConcatenatedRawJsonTransport();
 
-process.stdout.write("smoke test passed\n");
+// ── Routing accuracy tests ──────────────────────────────────────────────
+
+const routingTests = [
+  ["How do I persist SyncState between reconnects?", "automerge-swift-sync", "sync question → sync skill"],
+  ["AutomergeEncoder SchemaStrategy cautiousWrite", "automerge-swift-codable", "codable question → codable skill"],
+  ["AutomergeText spliceText Cursor collaborative editing", "automerge-swift-text", "text question → text skill"],
+  ["ObjId.ROOT put get maps lists Document creation", "automerge-swift-core", "core API → core skill"],
+  ["Document method signatures property types", "automerge-swift-ref", "API reference → ref skill"],
+  ["initial data problem skeleton document schema", "automerge-swift-modeling", "modeling → modeling skill"],
+  ["DocError BindingError decoding failure merge garbage", "automerge-swift-diag", "errors → diag skill"],
+];
+
+let routePassed = 0;
+let routeFailed = 0;
+const routeFailures = [];
+
+for (const [question, expectedSkill, label] of routingTests) {
+  const response = server.handleRequest({
+    jsonrpc: "2.0",
+    id: 900,
+    method: "tools/call",
+    params: {
+      name: "ask",
+      arguments: { question, includeSkillContent: false },
+    },
+  });
+
+  const text = response.result?.content?.[0]?.text || "";
+  if (text.includes(`Recommended skill: ${expectedSkill}`)) {
+    routePassed++;
+  } else {
+    routeFailed++;
+    const match = text.match(/Recommended skill: ([\w-]+)/);
+    const actual = match ? match[1] : "unknown";
+    routeFailures.push(`  ✗ ${label}: expected ${expectedSkill}, got ${actual}`);
+  }
+}
+
+const threshold = Math.floor(routingTests.length * 0.75);
+if (routePassed < threshold) {
+  console.error(
+    `Routing accuracy too low: ${routePassed}/${routingTests.length} passed (need ${threshold})\n${routeFailures.join("\n")}`,
+  );
+  process.exit(1);
+}
+
+// ── Agent content verification ──────────────────────────────────────────
+
+const agentPath = path.join(__dirname, "../agents/automerge-reference.md");
+const agentContent = (await import("node:fs")).readFileSync(agentPath, "utf-8");
+assert.ok(agentContent.length > 1000, "automerge-reference agent file should have substantial content");
+assert.match(agentContent, /ObjId/, "automerge-reference agent should contain ObjId API content");
+assert.match(agentContent, /AutomergeEncoder/, "automerge-reference agent should contain Codable content");
+assert.match(agentContent, /spliceText/, "automerge-reference agent should contain text content");
+assert.match(agentContent, /SyncState/, "automerge-reference agent should contain sync content");
+
+// ── Verify all 8 skills return real content via MCP reads ───────────────
+
+const skillContentTests = [
+  { name: "automerge-swift", mustContain: "Router", minLength: 500 },
+  { name: "automerge-swift-core", mustContain: "ObjId", minLength: 500 },
+  { name: "automerge-swift-codable", mustContain: "AutomergeEncoder", minLength: 500 },
+  { name: "automerge-swift-text", mustContain: "spliceText", minLength: 500 },
+  { name: "automerge-swift-sync", mustContain: "SyncState", minLength: 500 },
+  { name: "automerge-swift-modeling", mustContain: "initial data", minLength: 500 },
+  { name: "automerge-swift-diag", mustContain: "DocError", minLength: 500 },
+  { name: "automerge-swift-ref", mustContain: "Document", minLength: 500 },
+];
+
+for (const { name, mustContain, minLength } of skillContentTests) {
+  const skill = pluginCatalog.skills.find((s) => s.name === name);
+  assert.ok(skill, `skill ${name} should exist in catalog`);
+
+  const readResp = server.handleRequest({
+    jsonrpc: "2.0",
+    id: 950,
+    method: "resources/read",
+    params: { uri: skill.uri },
+  });
+
+  assert.equal(readResp.error, undefined, `expected resources/read to succeed for ${name}`);
+  const text = readResp.result.contents[0].text;
+  assert.ok(
+    text.length >= minLength,
+    `skill ${name} content too short (${text.length} chars, need ${minLength})`,
+  );
+  assert.match(
+    text,
+    new RegExp(mustContain),
+    `skill ${name} missing expected keyword "${mustContain}"`,
+  );
+}
+
+// ── Verify ask with includeSkillContent returns actual content ───────────
+
+const askWithContentResp = server.handleRequest({
+  jsonrpc: "2.0",
+  id: 960,
+  method: "tools/call",
+  params: {
+    name: "ask",
+    arguments: {
+      question: "How do I persist SyncState between reconnects?",
+      includeSkillContent: true,
+    },
+  },
+});
+
+assert.equal(askWithContentResp.error, undefined, "expected ask with content to succeed");
+const askContentText = askWithContentResp.result.content[0].text;
+assert.ok(
+  askContentText.length > 500,
+  `ask with includeSkillContent returned too little (${askContentText.length} chars)`,
+);
+assert.match(askContentText, /SyncState/, "ask with content should include actual sync content");
+
+process.stdout.write(
+  `smoke test passed (routing: ${routePassed}/${routingTests.length}, skills: ${skillContentTests.length}/${skillContentTests.length}${routeFailures.length > 0 ? ", soft misses: " + routeFailures.join("; ") : ""})\n`,
+);
