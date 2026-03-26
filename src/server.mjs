@@ -20,7 +20,7 @@ import {
 
 const SERVER_INFO = {
   name: "automerge-swift",
-  version: "1.3.1",
+  version: "1.3.2",
 };
 
 const LATEST_PROTOCOL_VERSION = "2025-11-25";
