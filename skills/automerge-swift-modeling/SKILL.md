@@ -13,6 +13,8 @@ description: Use when designing Automerge document schemas, choosing between Tex
 - "Should I use Text or String for this field?"
 - "How do I save and load Automerge documents?"
 - "How do I set up UTType and Transferable for file sharing?"
+- "How do I build a document-based app with Automerge?"
+- "Should I use FileDocument or ReferenceFileDocument?"
 
 ---
 
@@ -255,6 +257,100 @@ try doc.spliceText(obj: nameId, start: 0, delete: 0, value: "Buy milk")
 - **Large binary blobs** (images, audio): Store references, not content
 - **Append-only logs** where order must be total: Automerge merges may interleave
 - **Data that must never conflict**: If last-writer-wins is wrong but concurrent edits are possible, you need application-level conflict resolution on top of Automerge
+
+## Document-Based App Architecture
+
+### Use ReferenceFileDocument, Not FileDocument
+
+`Automerge.Document` is a reference type that accumulates changes over time. `FileDocument` copies values on every edit cycle, which breaks Automerge's change tracking. Always use `ReferenceFileDocument`:
+
+```swift
+import SwiftUI
+import Automerge
+
+final class MyDocument: ReferenceFileDocument {
+    static var readableContentTypes: [UTType] { [.automerge] }
+
+    let doc: Document
+    let modelEncoder: AutomergeEncoder
+    let modelDecoder: AutomergeDecoder
+    @Published var model: MyModel
+
+    // New document — seed the schema immediately
+    init() {
+        let newDoc = Document()
+        self.doc = newDoc
+        self.modelEncoder = AutomergeEncoder(doc: newDoc, strategy: .createWhenNeeded)
+        self.modelDecoder = AutomergeDecoder(doc: newDoc)
+        let newModel = MyModel()
+        self.model = newModel
+        try! modelEncoder.encode(newModel) // Seeds the Automerge schema
+    }
+
+    // Load from file
+    required init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        let loadedDoc = try Document(data)
+        self.doc = loadedDoc
+        self.modelEncoder = AutomergeEncoder(doc: loadedDoc, strategy: .createWhenNeeded)
+        self.modelDecoder = AutomergeDecoder(doc: loadedDoc)
+        self.model = try modelDecoder.decode(MyModel.self)
+    }
+
+    func snapshot(contentType: UTType) throws -> Data {
+        doc.save()
+    }
+
+    func fileWrapper(snapshot: Data, configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: snapshot)
+    }
+}
+```
+
+### Schema Seeding via Codable Encode
+
+When creating a new document, immediately encode your default model. This establishes the Automerge schema (creates all the Maps, Lists, and Text objects) so that future forks and merges work correctly. This is the simplest approach to the initial data problem:
+
+```swift
+let doc = Document()
+let encoder = AutomergeEncoder(doc: doc, strategy: .createWhenNeeded)
+try encoder.encode(MyModel()) // Schema now exists in the document
+```
+
+### UndoManager Trick for iOS Autosave
+
+In document-based iOS apps, changes from network sync don't mark the document as dirty, so iOS won't autosave them. Register a no-op undo action after applying remote changes to trigger autosave:
+
+```swift
+// After receiving remote sync changes:
+undoManager?.registerUndo(withTarget: document) { _ in }
+```
+
+Without this, synced changes persist in memory but are lost if the app is backgrounded before the user makes a local edit.
+
+### Custom File Format with Document Identity
+
+For apps that support merging files, wrap Automerge bytes with an identifier to prevent merging unrelated documents:
+
+```swift
+struct WrappedDocument: Codable {
+    let id: UUID           // shared origin identity
+    let data: Data         // doc.save() bytes
+}
+
+// On merge from file:
+func mergeFile(_ fileURL: URL) throws {
+    let wrapped = try decoder.decode(WrappedDocument.self, from: Data(contentsOf: fileURL))
+    guard wrapped.id == self.documentId else {
+        throw MergeError.noSharedHistory
+    }
+    let otherDoc = try Document(wrapped.data)
+    try doc.merge(other: otherDoc)
+    model = try modelDecoder.decode(MyModel.self) // Re-decode after merge
+}
+```
 
 ## Common Mistakes
 

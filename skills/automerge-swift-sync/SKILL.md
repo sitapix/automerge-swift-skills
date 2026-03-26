@@ -13,6 +13,8 @@ description: Use when synchronizing Automerge documents between peers, implement
 - "How do I get patches to update my UI after a merge?"
 - "How do I read the change history of a document?"
 - "Do I need to persist SyncState between sessions?"
+- "How do I throttle UI updates from remote sync?"
+- "How do I use automerge-repo with WebSocket and peer-to-peer?"
 
 ---
 
@@ -310,6 +312,100 @@ class MyViewModel: ObservableObject {
     }
 }
 ```
+
+## Throttled objectWillChange for Remote Sync
+
+`Document.objectWillChange` fires on every remote sync change, which can flood SwiftUI with view rebuilds. Throttle it and check whether the document actually changed using heads:
+
+```swift
+import Combine
+
+final class MyDocument: ReferenceFileDocument, ObservableObject {
+    let doc: Document
+    var latestHeads: Set<ChangeHash>
+    private var syncSubscription: AnyCancellable?
+
+    func observeRemoteChanges() {
+        latestHeads = doc.heads()
+
+        syncSubscription = doc.objectWillChange
+            .throttle(for: 1.0, scheduler: DispatchQueue.main, latest: true)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in
+                guard let self else { return }
+                let currentHeads = self.doc.heads()
+                guard currentHeads != self.latestHeads else { return }
+                self.latestHeads = currentHeads
+                try? self.getModelUpdates() // Re-decode model from document
+                self.objectWillChange.send()
+            }
+    }
+}
+```
+
+### ChangeHash-Based Staleness Detection
+
+`doc.heads()` returns the set of latest change hashes. Compare before and after to determine if the document actually changed — avoids unnecessary work when throttled notifications fire but no new changes arrived:
+
+```swift
+let before = doc.heads()
+try doc.receiveSyncMessage(state: syncState, message: msg)
+let after = doc.heads()
+if before != after {
+    // Document actually changed — update UI
+}
+```
+
+## Using automerge-repo-swift
+
+For production apps, `automerge-repo-swift` provides higher-level sync infrastructure with WebSocket and peer-to-peer transports, so you don't need to manage the sync loop manually.
+
+### Setup
+
+```swift
+// Package.swift
+.package(url: "https://github.com/automerge/automerge-repo-swift", from: "0.3.0")
+```
+
+### Global Repo and Network Providers
+
+Create the `Repo` and network providers once at app startup as globals or in the `@main` App:
+
+```swift
+import AutomergeRepo
+
+// Module-level globals — initialized once
+let repo = Repo(sharePolicy: SharePolicy.agreeable)
+let websocket = WebSocketProvider(.init(reconnectOnError: true))
+let peerToPeer = PeerToPeerProvider(
+    PeerToPeerProviderConfiguration(
+        passcode: "MyAppSync",
+        reconnectOnError: true,
+        autoconnect: false
+    )
+)
+```
+
+### Importing Documents into the Repo
+
+Register documents with the repo when their view appears:
+
+```swift
+struct DocumentView: View {
+    @ObservedObject var document: MyDocument
+
+    var body: some View {
+        // ... your UI ...
+        .task {
+            _ = try? await repo.import(
+                handle: DocHandle(id: document.id, doc: document.doc)
+            )
+        }
+    }
+}
+```
+
+Once imported, the repo handles sync automatically over connected transports. Connect transports via toolbar controls or at app launch depending on your UX.
 
 ## Common Mistakes
 

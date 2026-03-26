@@ -13,6 +13,7 @@ description: Use when encoding/decoding Swift Codable types to/from Automerge do
 - "How do I use Counter for concurrent increments?"
 - "When should I use Codable vs the core Document API?"
 - "Why is my Codable encode/decode slow?"
+- "How do I keep my Swift model in sync with the Automerge document?"
 
 ---
 
@@ -180,6 +181,52 @@ let model = try decoder.decode(MyModel.self)
 let titleId = try doc.lookupPath(path: ".title")!
 try doc.updateText(obj: titleId, value: "new title")
 ```
+
+## Dual Update Flow — Keeping Model and Document in Sync
+
+In a real app, your Swift model and the Automerge document can get out of sync in two directions: local user edits change the model, and remote sync changes the document. Handle both with explicit methods:
+
+```swift
+final class MyDocument: ReferenceFileDocument {
+    let doc: Document
+    let modelEncoder: AutomergeEncoder
+    let modelDecoder: AutomergeDecoder
+    @Published var model: MyModel
+
+    /// After local user edits: push model changes into the Automerge document
+    func storeModelUpdates() throws {
+        try modelEncoder.encode(model)
+        self.objectWillChange.send()
+    }
+
+    /// After remote sync: pull document changes into the Swift model
+    func getModelUpdates() throws {
+        model = try modelDecoder.decode(MyModel.self)
+    }
+}
+```
+
+### Two Update Patterns in Practice
+
+Value-type fields (title, attendees, flags) and reference-type fields (`AutomergeText`) update differently:
+
+| Field Type | Update Pattern | When |
+|------------|---------------|------|
+| `String`, `Bool`, `Int`, etc. | Call `storeModelUpdates()` after editing | On commit (e.g., `onSubmit`, focus loss) |
+| `AutomergeText` | Use `textBinding()` — writes directly to document | Every keystroke, no re-encode needed |
+
+```swift
+// Value-type field: explicit store after edit
+TextField("Title", text: $document.model.title)
+    .onSubmit {
+        try? document.storeModelUpdates()
+    }
+
+// AutomergeText field: direct binding, no storeModelUpdates needed
+TextEditor(text: document.model.notes.textBinding())
+```
+
+This split is important for performance. `storeModelUpdates()` re-encodes the entire model (walks every property). `textBinding()` writes only the changed characters directly to the Automerge text object.
 
 ## Gotchas
 

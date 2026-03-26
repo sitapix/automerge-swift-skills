@@ -6,7 +6,7 @@ MCP server that brings Automerge Swift documentation, skills, and command entryp
 
 The MCP server exposes Automerge Swift guidance through the MCP protocol:
 
-- **8 tools** — `ask`, `list_skills`, `search_skills`, `get_skill`, `list_docs`, `search_docs`, `search_symbols`, `get_doc`
+- **8 tools** — `search_skills`, `read_skill`, `get_catalog`, `list_skills`, `list_docs`, `search_docs`, `search_symbols`, `get_doc`
 - **MCP resources** for each skill and documentation page
 - **2 MCP prompts** — `ask` and `audit`
 - Full-text search across skill metadata, DocC articles, and source-derived symbol docs
@@ -145,16 +145,16 @@ Once configured, try asking your AI tool:
 
 > "Search the Automerge Swift docs for Document"
 
-It should route through the `ask` tool or prompt and point you at the right skill.
+It should find the right skill via `search_skills` and return relevant guidance.
 
 ## Available Tools
 
 | Tool | Description |
 |------|-------------|
-| `ask` | Route a natural-language Automerge Swift question to the best skill |
-| `list_skills` | List all Automerge Swift skills exposed as MCP resources |
-| `search_skills` | Search skills by name, aliases, and descriptions |
-| `get_skill` | Retrieve a specific skill by name or URI |
+| `search_skills` | BM25 ranked search with matching sections |
+| `read_skill` | Read skill content with optional section filtering |
+| `get_catalog` | Browse skills organized by category |
+| `list_skills` | List all Automerge Swift skills |
 | `list_docs` | List all vendored documentation pages, optionally filtered by module or source kind |
 | `search_docs` | Full-text search across all documentation pages |
 | `search_symbols` | Search only source-derived public Swift symbol docs |

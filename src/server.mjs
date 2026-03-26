@@ -7,11 +7,12 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { DEFAULT_VENDOR_ROOT, assertVendorRoot, findDoc, listDocs, loadCatalog, searchDocs } from "./catalog.mjs";
 import {
-  buildAskResponse,
   DEFAULT_COMMANDS_ROOT,
   DEFAULT_SKILLS_ROOT,
   findSkill,
+  getCatalog,
   getPrompt,
+  getSkillSections,
   listSkills,
   loadPluginCatalog,
   searchSkills,
@@ -152,59 +153,73 @@ function toolDefinitions() {
     },
     {
       name: "search_skills",
-      description: "Search Automerge Swift skills by name, aliases, and description.",
+      description: "Search Automerge Swift skills by keyword query. Returns ranked results with matching section names. Use to find relevant skills for a topic like \"sync\", \"ObjId\", or \"merge garbage\".",
       inputSchema: {
         type: "object",
         properties: {
           query: {
             type: "string",
-            description: "Search text.",
+            description: "Search query (e.g. \"sync protocol\", \"AutomergeText cursor\").",
           },
           limit: {
             type: "integer",
             minimum: 1,
             maximum: 20,
-            description: "Maximum number of results to return.",
-            default: 5,
+            description: "Max results (default 10).",
+          },
+          category: {
+            type: "string",
+            description: "Filter by category (e.g. \"sync-collaboration\", \"document-api\").",
+          },
+          kind: {
+            type: "string",
+            description: "Filter by kind (e.g. \"ref\", \"diag\", \"router\").",
           },
         },
         required: ["query"],
       },
     },
     {
-      name: "get_skill",
-      description: "Return the full markdown for a specific Automerge Swift skill by name or URI.",
+      name: "read_skill",
+      description: "Read skill content with optional section filtering. Supports reading specific sections to reduce token usage. Use listSections to see available sections first.",
       inputSchema: {
         type: "object",
         properties: {
           name: {
             type: "string",
-            description: "Skill name, for example automerge-swift-sync.",
+            description: "Skill name (e.g. \"automerge-swift-sync\").",
           },
           uri: {
             type: "string",
-            description: "Skill resource URI from resources/list or search_skills.",
+            description: "Skill resource URI (alternative to name).",
+          },
+          sections: {
+            type: "array",
+            items: { type: "string" },
+            description: "Section headings to include (case-insensitive substring match). Omit for full content.",
+          },
+          listSections: {
+            type: "boolean",
+            description: "If true, return only the section table of contents (heading + size) without content.",
           },
         },
       },
     },
     {
-      name: "ask",
-      description: "Route a natural-language Automerge Swift question to the most relevant skill and return its guidance.",
+      name: "get_catalog",
+      description: "Get the Automerge Swift skills catalog organized by category. Returns skill names, kinds, and descriptions grouped by category.",
       inputSchema: {
         type: "object",
         properties: {
-          question: {
+          category: {
             type: "string",
-            description: "A natural-language Automerge Swift question.",
+            description: "Filter to a specific category (e.g. \"sync-collaboration\"). Omit for all categories.",
           },
-          includeSkillContent: {
+          includeDescriptions: {
             type: "boolean",
-            description: "Whether to include the full routed skill markdown in the response.",
-            default: true,
+            description: "Include skill descriptions in output. Default false for compact listing.",
           },
         },
-        required: ["question"],
       },
     },
     {
@@ -314,36 +329,75 @@ export function createServer(
         throw jsonRpcError(-32602, "search_skills requires a non-empty query");
       }
 
-      const limit = Number.isInteger(args.limit) ? args.limit : 5;
-      return makeTextResult(
-        JSON.stringify(
-          searchSkills(pluginCatalog, args.query, Math.max(1, Math.min(20, limit))),
-          null,
-          2,
-        ),
-      );
+      const results = searchSkills(pluginCatalog, args.query, {
+        limit: args.limit,
+        category: args.category,
+        kind: args.kind,
+      });
+      if (results.length === 0) {
+        return makeTextResult(`No skills found for: "${args.query}"`);
+      }
+      const lines = [`# Search: "${args.query}"`, `${results.length} results`, ""];
+      for (const r of results) {
+        const kindTag = r.kind ? ` [${r.kind}]` : "";
+        lines.push(`### ${r.name}${kindTag} (score: ${r.score})`);
+        lines.push(r.description);
+        if (r.matchingSections.length > 0) {
+          lines.push(`Sections: ${r.matchingSections.join(", ")}`);
+        }
+        lines.push("");
+      }
+      return makeTextResult(lines.join("\n"));
     }
 
-    if (name === "get_skill") {
-      const skill = findSkill(pluginCatalog, args);
+    if (name === "read_skill") {
+      const skill = findSkill(pluginCatalog, { name: args.name, uri: args.uri });
       if (!skill) {
         throw jsonRpcError(-32001, "Skill not found", args);
       }
+
+      if (args.listSections) {
+        const lines = [`## ${skill.name} — Sections`, `Total: ${skill.markdown.length} chars`, ""];
+        lines.push("| Section | Chars |");
+        lines.push("|---------|-------|");
+        for (const s of skill.sections) {
+          lines.push(`| ${s.heading} | ${s.charCount} |`);
+        }
+        return makeTextResult(lines.join("\n"));
+      }
+
+      if (args.sections && args.sections.length > 0) {
+        const result = getSkillSections(pluginCatalog, skill.name, args.sections);
+        if (!result || !result.content) {
+          return makeTextResult(`No matching sections found in ${skill.name}.`);
+        }
+        const header = `## ${skill.name} (filtered: ${result.sections.map((s) => s.heading).join(", ")})\n\n`;
+        return makeTextResult(header + result.content);
+      }
+
       return makeTextResult(formatSkill(skill));
     }
 
-    if (name === "ask") {
-      if (!args.question || !String(args.question).trim()) {
-        throw jsonRpcError(-32602, "ask requires a non-empty question");
+    if (name === "get_catalog") {
+      const skillCatalog = getCatalog(pluginCatalog, args.category);
+      const includeDescriptions = args.includeDescriptions === true;
+      const lines = [`# Automerge Swift Skills Catalog`, `${skillCatalog.totalSkills} skills`, ""];
+
+      const sorted = Object.entries(skillCatalog.categories).sort(([a], [b]) => a.localeCompare(b));
+      for (const [, cat] of sorted) {
+        lines.push(`## ${cat.label} (${cat.skills.length})`);
+        for (const s of cat.skills) {
+          const kindTag = s.kind && s.kind !== "workflow" ? ` [${s.kind}]` : "";
+          if (includeDescriptions) {
+            lines.push(`- **${s.name}**${kindTag}: ${s.description}`);
+          } else {
+            lines.push(`- ${s.name}${kindTag}`);
+          }
+        }
+        lines.push("");
       }
 
-      const response = buildAskResponse(pluginCatalog, args.question, {
-        includeSkillContent: args.includeSkillContent !== false,
-      });
-      if (!response) {
-        throw jsonRpcError(-32001, "Unable to route question", args);
-      }
-      return makeTextResult(response);
+      return makeTextResult(lines.join("\n"));
     }
 
     if (name === "list_docs") {

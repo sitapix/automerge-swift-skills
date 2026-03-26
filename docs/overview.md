@@ -12,14 +12,14 @@ For most agent tasks, use this order:
 1. `README.md` for the high-level purpose.
 2. `docs/workflows.md` for common maintenance commands.
 3. `src/server.mjs` for MCP behavior.
-4. `src/plugin-catalog.mjs` for skill/prompt loading and ask routing.
+4. `src/plugin-catalog.mjs` for skill/prompt loading and BM25 search.
 5. `src/catalog.mjs` for doc indexing and search behavior.
 6. `vendor/automerge-swift/` for the actual vendored docs.
 
 ## Repo map
 
 - `src/server.mjs`: server entry point, protocol handling, tools, and resources.
-- `src/plugin-catalog.mjs`: loads skills and commands, searches them, and routes `ask`.
+- `src/plugin-catalog.mjs`: loads skills and commands, builds MiniSearch index, section parsing.
 - `src/catalog.mjs`: scans vendored Markdown, builds the catalog, and implements search helpers.
 - `scripts/sync-docs.mjs`: copies DocC content from a local `automerge-swift` checkout and regenerates symbol docs.
 - `scripts/smoke-test.mjs`: basic validation for the custom MCP server.

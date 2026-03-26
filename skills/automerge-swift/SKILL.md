@@ -61,9 +61,11 @@ To launch an agent, pass the user's question as the prompt. The agent runs in is
 - **"Map my model to a document"** -> `/skill automerge-swift-modeling` for schema decisions, then launch **automerge-reference** agent for Codable implementation
 - **"Build a collaborative text editor"** -> launch **automerge-reference** agent (covers both text and sync)
 - **"Sync and update UI"** -> launch **automerge-reference** agent for the sync loop and patches
-- **"Build a collaborative feature from scratch"** -> `/skill automerge-swift-modeling` for schema, then launch **automerge-reference** agent
+- **"Build a collaborative feature from scratch"** -> `/skill automerge-swift-modeling` for schema + app architecture, then launch **automerge-reference** agent
+- **"Build a document-based app"** -> `/skill automerge-swift-modeling` for ReferenceFileDocument pattern, then launch **automerge-reference** agent for Codable + sync
 - **"My merge produced garbage"** -> `/skill automerge-swift-diag` for diagnosis
 - **"What's the exact signature for X"** -> launch **automerge-reference** agent directly
+- **"How do I keep model and document in sync?"** -> launch **automerge-reference** agent for the dual update flow pattern
 
 ## Critical Mental Model
 

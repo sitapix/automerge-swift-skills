@@ -23,5 +23,8 @@
     "version:set": "python3 tooling/scripts/release/set_version.py",
     "release": "bash tooling/scripts/release/release.sh",
     "release:check": "npm run preflight"
+  },
+  "dependencies": {
+    "minisearch": "^7.2.0"
   }
 }

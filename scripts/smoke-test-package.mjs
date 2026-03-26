@@ -106,6 +106,13 @@ async function runProbe(packageDir, { input, expectedOutput, forbidOutput = null
 
 const packedPackageDir = packPackage();
 
+// Install dependencies (e.g. minisearch) in the extracted package
+execFileSync("npm", ["install", "--omit=dev", "--ignore-scripts"], {
+  cwd: packedPackageDir,
+  encoding: "utf8",
+  stdio: ["ignore", "ignore", "pipe"],
+});
+
 try {
   const contentLengthInitialize = JSON.stringify({
     jsonrpc: "2.0",
@@ -149,7 +156,7 @@ try {
 
   await runProbe(packedPackageDir, {
     input: `${rawInitialize}${rawToolsList}`,
-    expectedOutput: ['"id":202', '"id":203', '"name":"ask"', '"name":"list_docs"'],
+    expectedOutput: ['"id":202', '"id":203', '"name":"get_catalog"', '"name":"list_docs"'],
     forbidOutput: /Content-Length:/,
   });
 

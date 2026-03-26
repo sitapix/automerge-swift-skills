@@ -25,6 +25,9 @@
     "documentation",
     "model-context-protocol"
   ],
+  "dependencies": {
+    "minisearch": "^7.2.0"
+  },
   "engines": {
     "node": ">=18"
   },

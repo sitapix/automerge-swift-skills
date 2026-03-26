@@ -42,4 +42,4 @@ Use it for:
 - reading `vendor/automerge-swift/`
 - traversing the repo from clients that rely on MCP instead of direct workspace access
 
-Do not expect it to replace custom MCP tools like `ask`, `search_skills`, `search_docs`, or `get_doc` unless the agent is doing plain file search on top of it.
+Do not expect it to replace custom MCP tools like `search_skills`, `read_skill`, `get_catalog`, `search_docs`, or `get_doc` unless the agent is doing plain file search on top of it.

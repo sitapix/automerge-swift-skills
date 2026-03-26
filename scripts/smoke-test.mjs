@@ -107,7 +107,7 @@ const promptGetResponse = server.handleRequest({
 });
 
 assert.equal(promptGetResponse.error, undefined, "expected prompts/get to succeed");
-assert.match(promptGetResponse.result.messages[0].content.text, /Recommended skill: automerge-swift-sync/);
+assert.match(promptGetResponse.result.messages[0].content.text, /automerge-swift-sync/);
 
 const skillResource = pluginCatalog.skills.find((skill) => skill.name === "automerge-swift-sync");
 assert.ok(skillResource, "expected sync skill resource");
@@ -170,22 +170,19 @@ const symbolListResponse = server.handleRequest({
 assert.equal(symbolListResponse.error, undefined, "expected symbol list to succeed");
 assert.match(symbolListResponse.result.content[0].text, /"sourceKind": "symbol"/);
 
-const askResponse = server.handleRequest({
+const catalogResponse = server.handleRequest({
   jsonrpc: "2.0",
   id: 11,
   method: "tools/call",
   params: {
-    name: "ask",
-    arguments: {
-      question: "How do I persist SyncState between reconnects?",
-      includeSkillContent: false,
-    },
+    name: "get_catalog",
+    arguments: {},
   },
 });
 
-assert.equal(askResponse.error, undefined, "expected ask tool to succeed");
-assert.match(askResponse.result.content[0].text, /Recommended skill: automerge-swift-sync/);
-assert.match(askResponse.result.content[0].text, /Why: matched sync, merge, or history terms/);
+assert.equal(catalogResponse.error, undefined, "expected get_catalog tool to succeed");
+assert.match(catalogResponse.result.content[0].text, /Skills Catalog/);
+assert.match(catalogResponse.result.content[0].text, /automerge-swift-sync/);
 
 async function probeTransport(headerSeparator) {
   const child = spawn(process.execPath, [path.join(__dirname, "../src/server.mjs")], {
@@ -384,10 +381,10 @@ await probeTransport("\n\n");
 await probeRawJsonTransport();
 await probeConcatenatedRawJsonTransport();
 
-// ── Routing accuracy tests ──────────────────────────────────────────────
+// ── Search ranking tests ────────────────────────────────────────────────
 
-const routingTests = [
-  ["How do I persist SyncState between reconnects?", "automerge-swift-sync", "sync question → sync skill"],
+const searchTests = [
+  ["SyncState persist reconnects sync protocol", "automerge-swift-sync", "sync question → sync skill"],
   ["AutomergeEncoder SchemaStrategy cautiousWrite", "automerge-swift-codable", "codable question → codable skill"],
   ["AutomergeText spliceText Cursor collaborative editing", "automerge-swift-text", "text question → text skill"],
   ["ObjId.ROOT put get maps lists Document creation", "automerge-swift-core", "core API → core skill"],
@@ -400,32 +397,30 @@ let routePassed = 0;
 let routeFailed = 0;
 const routeFailures = [];
 
-for (const [question, expectedSkill, label] of routingTests) {
+for (const [question, expectedSkill, label] of searchTests) {
   const response = server.handleRequest({
     jsonrpc: "2.0",
     id: 900,
     method: "tools/call",
     params: {
-      name: "ask",
-      arguments: { question, includeSkillContent: false },
+      name: "search_skills",
+      arguments: { query: question, limit: 3 },
     },
   });
 
   const text = response.result?.content?.[0]?.text || "";
-  if (text.includes(`Recommended skill: ${expectedSkill}`)) {
+  if (text.includes(expectedSkill)) {
     routePassed++;
   } else {
     routeFailed++;
-    const match = text.match(/Recommended skill: ([\w-]+)/);
-    const actual = match ? match[1] : "unknown";
-    routeFailures.push(`  ✗ ${label}: expected ${expectedSkill}, got ${actual}`);
+    routeFailures.push(`  ✗ ${label}: "${expectedSkill}" not in top 3 for "${question}"`);
   }
 }
 
-const threshold = Math.floor(routingTests.length * 0.75);
+const threshold = Math.floor(searchTests.length * 0.75);
 if (routePassed < threshold) {
   console.error(
-    `Routing accuracy too low: ${routePassed}/${routingTests.length} passed (need ${threshold})\n${routeFailures.join("\n")}`,
+    `Search ranking too low: ${routePassed}/${searchTests.length} passed (need ${threshold})\n${routeFailures.join("\n")}`,
   );
   process.exit(1);
 }
@@ -477,29 +472,26 @@ for (const { name, mustContain, minLength } of skillContentTests) {
   );
 }
 
-// ── Verify ask with includeSkillContent returns actual content ───────────
+// ── Verify read_skill with section filtering returns filtered content ────
 
-const askWithContentResp = server.handleRequest({
+const readSkillResp = server.handleRequest({
   jsonrpc: "2.0",
   id: 960,
   method: "tools/call",
   params: {
-    name: "ask",
+    name: "read_skill",
     arguments: {
-      question: "How do I persist SyncState between reconnects?",
-      includeSkillContent: true,
+      name: "automerge-swift-sync",
+      listSections: true,
     },
   },
 });
 
-assert.equal(askWithContentResp.error, undefined, "expected ask with content to succeed");
-const askContentText = askWithContentResp.result.content[0].text;
-assert.ok(
-  askContentText.length > 500,
-  `ask with includeSkillContent returned too little (${askContentText.length} chars)`,
-);
-assert.match(askContentText, /SyncState/, "ask with content should include actual sync content");
+assert.equal(readSkillResp.error, undefined, "expected read_skill listSections to succeed");
+const readSkillText = readSkillResp.result.content[0].text;
+assert.match(readSkillText, /Section/, "listSections should include Section header");
+assert.match(readSkillText, /Chars/, "listSections should include Chars column");
 
 process.stdout.write(
-  `smoke test passed (routing: ${routePassed}/${routingTests.length}, skills: ${skillContentTests.length}/${skillContentTests.length}${routeFailures.length > 0 ? ", soft misses: " + routeFailures.join("; ") : ""})\n`,
+  `smoke test passed (search: ${routePassed}/${searchTests.length}, skills: ${skillContentTests.length}/${skillContentTests.length}${routeFailures.length > 0 ? ", soft misses: " + routeFailures.join("; ") : ""})\n`,
 );
